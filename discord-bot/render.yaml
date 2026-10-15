@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: state-gazette-bot
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /health
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: TARGET_CHANNEL_ID
+        value: "1272588171015618591"
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_REPO
+        value: wol321/news
+      - key: GITHUB_BRANCH
+        value: main
+      - key: PORT
+        value: 8000
