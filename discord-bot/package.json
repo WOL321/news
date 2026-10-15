@@ -1,0 +1,17 @@
+{
+  "name": "state-gazette-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that forwards messages to The State Gazette GitHub repo",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

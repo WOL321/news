@@ -1,0 +1,22 @@
+{
+  "dispatches": [
+    {
+      "id": "discord-1234567890",
+      "headline": "Example Dispatch from Discord",
+      "dateline": "DISCORD CHANNEL",
+      "date": "October 15, 2026",
+      "category": "diplomatic",
+      "priority": "standard",
+      "classification": "WIRE SERVICE DISPATCH",
+      "paragraphs": [
+        "This is an example of how a Discord message will be formatted in the news.json file.",
+        "The bot automatically extracts the headline, detects the category, and preserves all emojis and formatting."
+      ],
+      "author": "Discord User",
+      "source": "Discord",
+      "messageUrl": "https://discord.com/channels/.../.../...",
+      "timestamp": 1697400000000,
+      "images": []
+    }
+  ]
+}
