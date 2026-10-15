@@ -686,5 +686,32 @@ server.listen(PORT, () => {
 // STARTUP
 // ─────────────────────────────────────────────────────────────────────────────
 
+console.log('🔧 Starting State Gazette Bot...');
+console.log(`📋 Configuration:`);
+console.log(`   • Target Channel: ${CONFIG.TARGET_CHANNEL_ID}`);
+console.log(`   • GitHub Repo: ${CONFIG.GITHUB_REPO}`);
+console.log(`   • Branch: ${CONFIG.GITHUB_BRANCH}`);
+console.log(`   • Discord Token: ${CONFIG.DISCORD_TOKEN ? '✓ Set' : '✗ Missing'}`);
+console.log(`   • GitHub Token: ${CONFIG.GITHUB_TOKEN ? '✓ Set' : '✗ Missing'}`);
+console.log('');
+
 validateConfig();
-client.login(CONFIG.DISCORD_TOKEN);
+
+console.log('🔌 Connecting to Discord...');
+client.login(CONFIG.DISCORD_TOKEN).then(() => {
+  console.log('✓ Discord login successful');
+}).catch((error) => {
+  console.error('');
+  console.error('╔════════════════════════════════════════════════════════════╗');
+  console.error('║  ❌ DISCORD LOGIN FAILED                                   ║');
+  console.error('╠════════════════════════════════════════════════════════════╣');
+  console.error(`║  Error: ${error.message.padEnd(51)} ║`);
+  console.error('╠════════════════════════════════════════════════════════════╣');
+  console.error('║  Possible causes:                                          ║');
+  console.error('║  • Invalid or expired Discord token                        ║');
+  console.error('║  • Bot not invited to the server                           ║');
+  console.error('║  • Missing "Message Content Intent" in Discord Portal      ║');
+  console.error('╚════════════════════════════════════════════════════════════╝');
+  console.error('');
+  process.exit(1);
+});
