@@ -1,0 +1,31 @@
+# fly.toml - Configuration for State Gazette Discord Bot
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = 'state-gazette-bot'
+primary_region = 'iad'
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+
+# This is a long-running bot, not a web service
+# Don't auto-stop or scale based on HTTP traffic
+[http_service]
+  internal_port = 8080
+  auto_stop_machines = false
+  auto_start_machines = false
+  min_machines_running = 1
+  
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/"
+    timeout = "5s"
+
+# Resource allocation (free tier)
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'
