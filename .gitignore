@@ -9,3 +9,6 @@ build/
 .env.local
 .env.*.local
 discord-bot/.env
+
+# Poll state (runtime state, not committed)
+discord-bot/.poll-state.json
