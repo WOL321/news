@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+/* ===== STATE GAZETTE CUSTOM STYLES ===== */
+
+:root {
+  --slate-dark: #121417;
+  --slate-medium: #1a1d23;
+  --slate-light: #242830;
+  --paper: #E2E8F0;
+  --paper-dim: #94A3B8;
+  --gold: #D4AF37;
+  --gold-dim: #a88a2c;
+  --crimson: #DC2626;
+  --emerald: #059669;
+  --violet: #7C3AED;
+  --blue: #2563EB;
+}
+
+body {
+  background: var(--slate-dark);
+  color: var(--paper);
+  font-family: 'Crimson Text', 'Georgia', serif;
+}
+
+/* ===== MARQUEE TICKER ===== */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  animation: marquee 40s linear infinite;
+  width: max-content;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* ===== BROADSHEAD TYPOGRAPHY ===== */
+.font-masthead {
+  font-family: 'UnifrakturMaguntia', 'Playfair Display', serif;
+}
+
+.font-headline {
+  font-family: 'Playfair Display', 'Georgia', serif;
+}
+
+.font-body {
+  font-family: 'Crimson Text', 'Georgia', serif;
+}
+
+.font-dateline {
+  font-family: 'IM Fell English', 'Georgia', serif;
+}
+
+/* ===== DROP CAPS ===== */
+.drop-cap::first-letter {
+  float: left;
+  font-family: 'Playfair Display', serif;
+  font-size: 4.2em;
+  line-height: 0.75;
+  padding-right: 0.08em;
+  padding-top: 0.07em;
+  color: var(--gold);
+  font-weight: 900;
+}
+
+/* ===== MULTI-COLUMN LAYOUT ===== */
+.broadsheet-columns {
+  column-count: 1;
+  column-gap: 2.5rem;
+  column-rule: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+@media (min-width: 768px) {
+  .broadsheet-columns {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  .broadsheet-columns {
+    column-count: 3;
+  }
+}
+
+.broadsheet-columns p {
+  text-align: justify;
+  hyphens: auto;
+  margin-bottom: 1em;
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+/* ===== FILIGREE DIVIDERS ===== */
+.filigree {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--gold);
+  opacity: 0.6;
+}
+
+.filigree::before,
+.filigree::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+/* ===== CLASSIFICATION STAMPS ===== */
+.classification-stamp {
+  display: inline-block;
+  border: 2px solid var(--gold);
+  padding: 0.25rem 0.75rem;
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold);
+  transform: rotate(-1deg);
+  opacity: 0.85;
+}
+
+/* ===== ARTICLE CARD HOVER ===== */
+.article-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.article-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ===== CATEGORY BADGE ===== */
+.category-badge {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 2px;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--slate-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--slate-light);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dim);
+}
+
+/* ===== PULSE ANIMATION FOR BREAKING ===== */
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+/* ===== ORNAMENTAL BORDER ===== */
+.ornamental-border {
+  border-image: linear-gradient(to right, transparent, var(--gold), transparent) 1;
+  border-width: 1px 0;
+  border-style: solid;
+}
+
+/* ===== FADE IN ANIMATION ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ===== NAV UNDERLINE EFFECT ===== */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+  width: 100%;
+}
+
+/* ===== PRINT-LIKE PAPER TEXTURE ===== */
+.paper-texture {
+  background: linear-gradient(
+    135deg,
+    rgba(226, 232, 240, 0.02) 0%,
+    rgba(226, 232, 240, 0.04) 50%,
+    rgba(226, 232, 240, 0.02) 100%
+  );
+}
