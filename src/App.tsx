@@ -2,6 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { fetchDispatches, categoryColors, categoryLabels, type Category, type NewsDispatch } from './data/news';
 import { StateCrest, OrnamentalDivider, CornerOrnament } from './components/Heraldry';
 import LiveFeed from './components/LiveFeed';
+import ReadingProgress from './components/ReadingProgress';
+import Confetti from './components/Confetti';
+import ThemeToggle from './components/ThemeToggle';
+import { useBookmarks, BookmarkButton } from './components/Bookmarks';
+import ShareButton from './components/ShareButton';
+import { useKeyboardNavigation, KeyboardHints } from './components/KeyboardNav';
 
 /* ===== MARQUEE TICKER ===== */
 function MarqueeTicker({ dispatches }: { dispatches: NewsDispatch[] }) {
@@ -206,12 +212,18 @@ function FeaturedArticle({ dispatch, onClick }: { dispatch: NewsDispatch; onClic
 /* ===== ARTICLE CARD ===== */
 function ArticleCard({ dispatch, onClick, index }: { dispatch: NewsDispatch; onClick: () => void; index: number }) {
   const color = categoryColors[dispatch.category];
+  const { toggleBookmark, isBookmarked } = useBookmarks();
+  
+  // Calculate reading time
+  const wordCount = dispatch.paragraphs.join(' ').split(/\s+/).length;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
     <article
-      className="article-card paper-texture p-6 cursor-pointer rounded-sm animate-fade-in"
+      className="article-card paper-texture p-6 cursor-pointer rounded-sm animate-fade-in keyboard-nav-item"
       onClick={onClick}
       style={{ animationDelay: `${index * 80}ms` }}
+      tabIndex={0}
     >
       <div className="flex items-center justify-between mb-4">
         <span
@@ -244,8 +256,19 @@ function ArticleCard({ dispatch, onClick, index }: { dispatch: NewsDispatch; onC
       </p>
 
       <div className="mt-5 pt-4 border-t border-[#D4AF37]/10 flex items-center justify-between">
-        <span className="font-dateline text-[#94A3B8]/50 text-xs italic">By {dispatch.author}</span>
-        <span className="text-[#D4AF37]/60 text-xs font-headline tracking-wider">→</span>
+        <div className="flex items-center gap-3">
+          <span className="font-dateline text-[#94A3B8]/50 text-xs italic">By {dispatch.author}</span>
+          <span className="text-[#D4AF37]/30">•</span>
+          <span className="font-dateline text-[#94A3B8]/40 text-xs">{readingTime} min read</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <BookmarkButton 
+            articleId={dispatch.id} 
+            isBookmarked={isBookmarked(dispatch.id)} 
+            onToggle={() => toggleBookmark(dispatch.id)} 
+          />
+          <span className="text-[#D4AF37]/60 text-xs font-headline tracking-wider">→</span>
+        </div>
       </div>
     </article>
   );
@@ -336,6 +359,12 @@ function ArticleDetail({ dispatch, onBack }: { dispatch: NewsDispatch; onBack: (
             multiple independent sources. All dispatches are published under the authority of the Editorial Board
             of The State Gazette. Corrections and responses may be submitted to the Office of the Editor.
           </p>
+        </div>
+
+        {/* Share Buttons */}
+        <div className="mt-8 pt-6 border-t border-[#D4AF37]/10 flex items-center justify-between">
+          <span className="font-headline text-[#94A3B8]/50 text-xs tracking-wider uppercase">Share this dispatch</span>
+          <ShareButton headline={dispatch.headline} />
         </div>
       </div>
     </div>
@@ -656,12 +685,23 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dispatches, setDispatches] = useState<NewsDispatch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showConfetti, setShowConfetti] = useState(false);
+  
+  const { toggleBookmark, isBookmarked } = useBookmarks();
+  useKeyboardNavigation();
 
   // Fetch dispatches from news.json on mount
   useEffect(() => {
     fetchDispatches().then(data => {
       setDispatches(data);
       setIsLoading(false);
+      
+      // Show confetti if there's breaking news
+      const hasBreaking = data.some(d => d.priority === 'breaking');
+      if (hasBreaking) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 4000);
+      }
     });
   }, []);
 
@@ -698,6 +738,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#121417] text-[#E2E8F0]">
+      {/* Reading Progress Bar */}
+      <ReadingProgress />
+      
+      {/* Confetti for Breaking News */}
+      <Confetti active={showConfetti} />
+      
+      {/* Theme Toggle */}
+      <ThemeToggle />
+      
+      {/* Keyboard Navigation Hints */}
+      <KeyboardHints />
+
       {/* Marquee Ticker */}
       <MarqueeTicker dispatches={dispatches} />
 

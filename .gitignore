@@ -12,3 +12,4 @@ discord-bot/.env
 
 # Poll state (runtime state, not committed)
 discord-bot/.poll-state.json
+discord-bot/.analytics.json
