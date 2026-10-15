@@ -178,6 +178,57 @@ function generateClassification(priority, category) {
   return classifications[category] || 'WIRE SERVICE DISPATCH';
 }
 
+// Generate TL;DR summary (first 100 chars + key points)
+function generateTLDR(content) {
+  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const firstSentence = sentences[0]?.trim() || '';
+  
+  // Extract key points (sentences with numbers, dates, or important keywords)
+  const keyPoints = sentences
+    .filter(s => /\d+/.test(s) || /today|yesterday|announced|declared|signed/i.test(s))
+    .slice(0, 2)
+    .map(s => s.trim())
+    .join('. ');
+  
+  return keyPoints || firstSentence.substring(0, 150);
+}
+
+// Detect and extract links/videos
+function extractMedia(content) {
+  const urls = content.match(/https?:\/\/[^\s]+/g) || [];
+  const videos = urls.filter(url => 
+    url.includes('youtube.com') || 
+    url.includes('youtu.be') || 
+    url.includes('vimeo.com')
+  );
+  const images = urls.filter(url => 
+    /\.(jpg|jpeg|png|gif|webp)$/i.test(url)
+  );
+  
+  return { urls, videos, images };
+}
+
+// Track analytics
+function trackAnalytics(dispatch) {
+  const analyticsFile = 'discord-bot/.analytics.json';
+  let analytics = { totalDispatches: 0, byCategory: {}, byPriority: {}, byAuthor: {} };
+  
+  try {
+    if (fs.existsSync(analyticsFile)) {
+      analytics = JSON.parse(fs.readFileSync(analyticsFile, 'utf8'));
+    }
+  } catch (err) {
+    console.warn('⚠️  Failed to load analytics:', err.message);
+  }
+  
+  analytics.totalDispatches++;
+  analytics.byCategory[dispatch.category] = (analytics.byCategory[dispatch.category] || 0) + 1;
+  analytics.byPriority[dispatch.priority] = (analytics.byPriority[dispatch.priority] || 0) + 1;
+  analytics.byAuthor[dispatch.author] = (analytics.byAuthor[dispatch.author] || 0) + 1;
+  
+  fs.writeFileSync(analyticsFile, JSON.stringify(analytics, null, 2));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // IMAGE HANDLING
 // ─────────────────────────────────────────────────────────────────────────────
@@ -249,6 +300,10 @@ async function processMessage(message) {
   const category = detectCategory(fullContent);
   const priority = detectPriority(fullContent);
 
+  // Extract media and generate TL;DR
+  const media = extractMedia(fullContent);
+  const tldr = generateTLDR(fullContent);
+
   const dispatch = {
     id: `discord-${message.id}`,
     headline: extractHeadline(fullContent),
@@ -263,7 +318,12 @@ async function processMessage(message) {
     messageUrl: `https://discord.com/channels/${message.guild_id}/${message.channel_id}/${message.id}`,
     timestamp: new Date(message.timestamp).getTime(),
     images: images.map(img => img.repoPath),
+    tldr,
+    media,
   };
+  
+  // Track analytics
+  trackAnalytics(dispatch);
 
   // Load and update news.json
   const newsData = loadNewsJson();
