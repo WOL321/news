@@ -601,6 +601,26 @@ client.once(Events.ClientReady, (c) => {
   console.log('');
 });
 
+// Debug logging for connection events
+client.on('debug', (info) => {
+  // Only log important connection events
+  if (info.includes('[WS]') || info.includes('Connecting') || info.includes('Connected') || info.includes('Identify')) {
+    console.log(`🔍 ${info}`);
+  }
+});
+
+client.on('shardDisconnect', (event, shardId) => {
+  console.error(`❌ Shard ${shardId} disconnected:`, event);
+});
+
+client.on('shardReconnecting', (shardId) => {
+  console.log(`🔄 Shard ${shardId} reconnecting...`);
+});
+
+client.on('shardError', (error, shardId) => {
+  console.error(`❌ Shard ${shardId} error:`, error.message);
+});
+
 client.on(Events.MessageCreate, async (message) => {
   // Ignore bots
   if (message.author.bot) {
@@ -698,14 +718,35 @@ console.log('');
 validateConfig();
 
 console.log('🔌 Connecting to Discord...');
+
+// Add timeout for login
+const loginTimeout = setTimeout(() => {
+  console.error('');
+  console.error('╔════════════════════════════════════════════════════════════╗');
+  console.error('║  ⏱️  DISCORD LOGIN TIMEOUT                                 ║');
+  console.error('╠════════════════════════════════════════════════════════════╣');
+  console.error('║  Login attempt timed out after 30 seconds                  ║');
+  console.error('╠════════════════════════════════════════════════════════════╣');
+  console.error('║  Possible causes:                                          ║');
+  console.error('║  • Invalid or expired Discord token                        ║');
+  console.error('║  • Network connectivity issues                             ║');
+  console.error('║  • Discord API is down                                     ║');
+  console.error('║  • Firewall blocking WebSocket connections                 ║');
+  console.error('╚════════════════════════════════════════════════════════════╝');
+  console.error('');
+  process.exit(1);
+}, 30000);
+
 client.login(CONFIG.DISCORD_TOKEN).then(() => {
+  clearTimeout(loginTimeout);
   console.log('✓ Discord login successful');
 }).catch((error) => {
+  clearTimeout(loginTimeout);
   console.error('');
   console.error('╔════════════════════════════════════════════════════════════╗');
   console.error('║  ❌ DISCORD LOGIN FAILED                                   ║');
   console.error('╠════════════════════════════════════════════════════════════╣');
-  console.error(`║  Error: ${error.message.padEnd(51)} ║`);
+  console.error(`║  Error: ${error.message.substring(0, 51).padEnd(51)} ║`);
   console.error('╠════════════════════════════════════════════════════════════╣');
   console.error('║  Possible causes:                                          ║');
   console.error('║  • Invalid or expired Discord token                        ║');
