@@ -654,6 +654,35 @@ function sleep(ms) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// HEALTH CHECK SERVER (for Koyeb/Fly.io/Railway)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const http = require('http');
+
+const PORT = process.env.PORT || 8000;
+
+const server = http.createServer((req, res) => {
+  if (req.url === '/health' || req.url === '/') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      status: 'ok',
+      bot: client.isReady() ? 'online' : 'connecting',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      channel: CONFIG.TARGET_CHANNEL_ID,
+      repo: CONFIG.GITHUB_REPO,
+    }));
+  } else {
+    res.writeHead(404);
+    res.end('Not Found');
+  }
+});
+
+server.listen(PORT, () => {
+  console.log(`🏥 Health check server running on port ${PORT}`);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STARTUP
 // ─────────────────────────────────────────────────────────────────────────────
 

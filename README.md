@@ -45,7 +45,7 @@ See **[SETUP-SUMMARY.md](SETUP-SUMMARY.md)** for the complete guide.
 **TL;DR:**
 1. Create Discord bot with "Message Content Intent"
 2. Generate GitHub token with repo write access
-3. Deploy bot to Fly.io (free, 24/7 uptime)
+3. Deploy bot to Koyeb (free, no credit card, 24/7 uptime)
 4. Bot automatically forwards Discord messages to your website
 
 ---
@@ -55,8 +55,8 @@ See **[SETUP-SUMMARY.md](SETUP-SUMMARY.md)** for the complete guide.
 ```
 ├── discord-bot/          # Discord → GitHub forwarding bot
 │   ├── index.js          # Main bot logic
-│   ├── Dockerfile        # Container for Fly.io
-│   ├── fly.toml          # Fly.io configuration
+│   ├── Dockerfile        # Container for Koyeb
+│   ├── fly.toml          # (optional, for Fly.io)
 │   └── DEPLOY-FLYIO.md   # Deployment guide
 │
 ├── src/                  # React front-end
@@ -125,7 +125,7 @@ The bot listens to a Discord channel and automatically:
 
 **Deployment:**
 - GitHub Pages (website)
-- Fly.io (bot, free tier)
+- Koyeb (bot, free tier, no credit card)
 
 ---
 
@@ -134,7 +134,8 @@ The bot listens to a Discord channel and automatically:
 - **[SETUP-SUMMARY.md](SETUP-SUMMARY.md)** — Complete setup guide
 - **[QUICKSTART.md](QUICKSTART.md)** — 10-minute quick start
 - **[discord-bot/README.md](discord-bot/README.md)** — Bot documentation
-- **[discord-bot/DEPLOY-FLYIO.md](discord-bot/DEPLOY-FLYIO.md)** — Fly.io deployment
+- **[discord-bot/DEPLOY-KOYEB.md](discord-bot/DEPLOY-KOYEB.md)** — Koyeb deployment (recommended)
+- **[discord-bot/KOYEB-QUICK-START.md](discord-bot/KOYEB-QUICK-START.md)** — 5-minute quick reference
 
 ---
 
@@ -162,17 +163,23 @@ npm run preview
 
 Already configured! Just push to `main` branch.
 
-### Bot (Fly.io)
+### Bot (Koyeb — Recommended, Free, No Credit Card)
 
-```bash
-cd discord-bot
-fly launch
-fly secrets set DISCORD_TOKEN=your_token
-fly secrets set GITHUB_TOKEN=your_token
-fly deploy
-```
+1. Go to **https://www.koyeb.com** → Sign up with GitHub
+2. Click **"Create Service"** → Select **GitHub** → Choose **`wol321/news`**
+3. Configure:
+   - **Builder:** Docker
+   - **Dockerfile:** `discord-bot/Dockerfile`
+   - **Port:** `8000`
+4. Add environment variables:
+   - `DISCORD_TOKEN`
+   - `TARGET_CHANNEL_ID=1272588171015618591`
+   - `GITHUB_TOKEN`
+   - `GITHUB_REPO=wol321/news`
+   - `GITHUB_BRANCH=main`
+5. Click **"Deploy"**
 
-See [discord-bot/DEPLOY-FLYIO.md](discord-bot/DEPLOY-FLYIO.md) for detailed instructions.
+See [discord-bot/DEPLOY-KOYEB.md](discord-bot/DEPLOY-KOYEB.md) for detailed instructions.
 
 ---
 

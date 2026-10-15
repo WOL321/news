@@ -49,33 +49,24 @@ Everything you need to get your Discord → GitHub → Website pipeline working.
 
 ---
 
-### Step 2: Deploy to Fly.io (10 min)
-
-**Install Fly CLI:**
-```bash
-# macOS
-brew install flyctl
-
-# Windows (PowerShell)
-iwr https://fly.io/install.ps1 -useb | iex
-
-# Linux
-curl -L https://fly.io/install.sh | sh
-```
+### Step 2: Deploy to Koyeb (5 min, Free, No Credit Card)
 
 **Deploy:**
-```bash
-cd discord-bot
-fly launch
-fly secrets set DISCORD_TOKEN=your_token
-fly secrets set TARGET_CHANNEL_ID=1272588171015618591
-fly secrets set GITHUB_TOKEN=your_token
-fly secrets set GITHUB_REPO=wol321/news
-fly secrets set GITHUB_BRANCH=main
-fly deploy
-```
+1. Go to **https://www.koyeb.com** → Sign up with GitHub
+2. Click **"Create Service"** → Choose **GitHub** → Select **`wol321/news`**
+3. Configure:
+   - Builder: Docker
+   - Dockerfile: `discord-bot/Dockerfile`
+   - Port: `8000`
+4. Add environment variables:
+   - `DISCORD_TOKEN` = your discord bot token
+   - `TARGET_CHANNEL_ID` = `1272588171015618591`
+   - `GITHUB_TOKEN` = your github token
+   - `GITHUB_REPO` = `wol321/news`
+   - `GITHUB_BRANCH` = `main`
+5. Click **"Deploy"**
 
-**Full guide:** See `discord-bot/DEPLOY-FLYIO.md`
+**Full guide:** See `discord-bot/DEPLOY-KOYEB.md`
 
 ---
 
@@ -163,13 +154,14 @@ your-repo/
 - ✅ Use fine-grained GitHub tokens with minimal permissions
 
 ### Cost
-- ✅ Fly.io free tier: 3 machines, 160GB bandwidth/month
-- ✅ Your bot uses: 1 machine, minimal bandwidth
-- ✅ **Total cost: $0/month**
+- ✅ Koyeb free tier: 1 Nano service, 100GB bandwidth/month
+- ✅ Your bot uses: ~100MB RAM, minimal bandwidth
+- ✅ **Total cost: $0/month** (no credit card required!)
 
 ### Maintenance
 - ✅ Bot runs 24/7 automatically
-- ✅ Check logs occasionally: `fly logs`
+- ✅ Check logs occasionally in Koyeb dashboard
+- ✅ Auto-deploys when you push to GitHub
 - ✅ Update dependencies periodically
 - ✅ Monitor GitHub API rate limits (bot handles them)
 
@@ -225,11 +217,12 @@ Discord Channel → Bot → Downloads Images → Updates news.json → GitHub AP
 
 ## 💡 Pro Tips
 
-1. **Test locally first** before deploying to Fly.io
-2. **Monitor logs** with `fly logs -f`
-3. **Set up alerts** in Fly.io dashboard
-4. **Keep tokens safe** — use secrets, not files
+1. **Test locally first** before deploying to Koyeb
+2. **Monitor logs** in Koyeb dashboard
+3. **Set up notifications** in Koyeb for crash alerts
+4. **Keep tokens safe** — use Koyeb environment variables, not files
 5. **Update front-end** to fetch from `news.json` when ready
+6. **Auto-deploys** — just push to GitHub, Koyeb handles the rest
 
 ---
 
