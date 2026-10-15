@@ -170,3 +170,46 @@ export const dispatches: NewsDispatch[] = [
 export const breakingHeadlines = dispatches
   .filter(d => d.priority === 'breaking')
   .map(d => `⚡ ${d.headline}`);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LIVE DATA FETCHING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch dispatches from the live news.json file
+ * Falls back to hardcoded data if fetch fails
+ */
+export async function fetchDispatches(): Promise<NewsDispatch[]> {
+  try {
+    const response = await fetch('./news.json');
+    if (!response.ok) throw new Error('Failed to fetch news.json');
+    
+    const data = await response.json();
+    
+    // If we have live data, use it; otherwise fall back to hardcoded
+    if (data.dispatches && data.dispatches.length > 0) {
+      // Map live data to match our interface
+      return data.dispatches.map((d: any) => ({
+        id: d.id,
+        headline: d.headline,
+        dateline: d.dateline,
+        date: d.date,
+        category: d.category as Category,
+        priority: d.priority as 'breaking' | 'standard' | 'archival',
+        classification: d.classification,
+        paragraphs: d.paragraphs,
+        author: d.author,
+        source: d.source,
+        messageUrl: d.messageUrl,
+        timestamp: d.timestamp,
+        images: d.images,
+      }));
+    }
+    
+    // Fall back to hardcoded data
+    return dispatches;
+  } catch (error) {
+    console.warn('Failed to fetch live dispatches, using hardcoded data:', error);
+    return dispatches;
+  }
+}

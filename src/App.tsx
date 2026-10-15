@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import { dispatches, categoryColors, categoryLabels, breakingHeadlines, type Category, type NewsDispatch } from './data/news';
+import { dispatches as hardcodedDispatches, fetchDispatches, categoryColors, categoryLabels, type Category, type NewsDispatch } from './data/news';
 import { StateCrest, OrnamentalDivider, CornerOrnament } from './components/Heraldry';
 import LiveFeed from './components/LiveFeed';
 
 /* ===== MARQUEE TICKER ===== */
-function MarqueeTicker() {
+function MarqueeTicker({ dispatches }: { dispatches: NewsDispatch[] }) {
+  const breakingHeadlines = dispatches
+    .filter(d => d.priority === 'breaking')
+    .map(d => `⚡ ${d.headline}`);
+  
   const headlines = breakingHeadlines.length > 0
     ? breakingHeadlines
     : ['⚡ THE STATE GAZETTE — ALL DISPATCHES CURRENT — NO BREAKING NEWS AT THIS HOUR'];
@@ -399,7 +403,7 @@ function ArchiveSidebar({ allDispatches, onSelectArticle }: { allDispatches: New
 }
 
 /* ===== DISCORD EMBED PREVIEW ===== */
-function DiscordEmbedPreview() {
+function DiscordEmbedPreview({ dispatches }: { dispatches: NewsDispatch[] }) {
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <OrnamentalDivider className="mb-8" />
@@ -640,6 +644,16 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<Category | 'all'>('all');
   const [selectedArticle, setSelectedArticle] = useState<NewsDispatch | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dispatches, setDispatches] = useState<NewsDispatch[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch dispatches from news.json on mount
+  useEffect(() => {
+    fetchDispatches().then(data => {
+      setDispatches(data);
+      setIsLoading(false);
+    });
+  }, []);
 
   const filteredDispatches = useMemo(() => {
     let result = activeCategory === 'all'
@@ -675,7 +689,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#121417] text-[#E2E8F0]">
       {/* Marquee Ticker */}
-      <MarqueeTicker />
+      <MarqueeTicker dispatches={dispatches} />
 
       {/* Masthead */}
       <Masthead />
@@ -746,7 +760,7 @@ export default function App() {
           <LiveFeed />
 
           {/* Discord Embed Preview */}
-          <DiscordEmbedPreview />
+          <DiscordEmbedPreview dispatches={dispatches} />
 
           {/* Editorial Submission Form */}
           <EditorialForm />
