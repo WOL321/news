@@ -1,0 +1,54 @@
+name: State Gazette Wire Service
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  poll-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd discord-bot
+          npm install --production
+
+      - name: Poll Discord for new messages
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          TARGET_CHANNEL_ID: ${{ secrets.TARGET_CHANNEL_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: 'main'
+          GITHUB_ACTIONS_MODE: 'true'
+        run: |
+          cd discord-bot
+          node poll.js
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "State Gazette Bot"
+          git config user.email "bot@state-gazette.diplomaticamc"
+          git add public/news.json public/assets/dispatches/ 2>/dev/null || true
+          
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "📭 No new dispatches to publish"
+          else
+            git commit -m "📰 New dispatches from Discord"
+            git push
+            echo "✅ Dispatches published!"
+          fi

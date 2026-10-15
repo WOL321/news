@@ -45,7 +45,7 @@ See **[SETUP-SUMMARY.md](SETUP-SUMMARY.md)** for the complete guide.
 **TL;DR:**
 1. Create Discord bot with "Message Content Intent"
 2. Generate GitHub token with repo write access
-3. Deploy bot to Render (free, no credit card, 24/7 uptime with cron-job.org)
+3. Bot runs automatically via GitHub Actions (free, no credit card, no external hosting)
 4. Bot automatically forwards Discord messages to your website
 
 ---
@@ -55,9 +55,8 @@ See **[SETUP-SUMMARY.md](SETUP-SUMMARY.md)** for the complete guide.
 ```
 ├── discord-bot/          # Discord → GitHub forwarding bot
 │   ├── index.js          # Main bot logic
-│   ├── Procfile          # Render configuration
-│   ├── render.yaml       # Render blueprint (optional)
-│   └── DEPLOY-RENDER.md  # Deployment guide
+│   ├── poll.js           # GitHub Actions polling script
+│   └── .poll-state.json  # Runtime state (not committed)
 │
 ├── src/                  # React front-end
 │   ├── components/       # UI components
@@ -125,7 +124,7 @@ The bot listens to a Discord channel and automatically:
 
 **Deployment:**
 - GitHub Pages (website)
-- Render (bot, free tier, no credit card)
+- GitHub Actions (bot, free tier, no credit card, no external hosting)
 
 ---
 
@@ -134,8 +133,8 @@ The bot listens to a Discord channel and automatically:
 - **[SETUP-SUMMARY.md](SETUP-SUMMARY.md)** — Complete setup guide
 - **[QUICKSTART.md](QUICKSTART.md)** — 10-minute quick start
 - **[discord-bot/README.md](discord-bot/README.md)** — Bot documentation
-- **[discord-bot/DEPLOY-RENDER.md](discord-bot/DEPLOY-RENDER.md)** — Render deployment (recommended)
-- **[discord-bot/RENDER-QUICK-START.md](discord-bot/RENDER-QUICK-START.md)** — 5-minute quick reference
+- **[GITHUB-ACTIONS-SETUP.md](GITHUB-ACTIONS-SETUP.md)** — GitHub Actions deployment (recommended)
+- **[NEXT-STEPS.md](NEXT-STEPS.md)** — Quick start guide
 
 ---
 
@@ -163,21 +162,24 @@ npm run preview
 
 Already configured! Just push to `main` branch.
 
-### Bot (Render — Recommended, Free, No Credit Card)
+### Bot (GitHub Actions — Recommended, Free, No Credit Card)
 
-1. Go to **https://render.com** → Sign up with GitHub
-2. Click **"New +"** → **"Web Service"** → Connect **`wol321/news`**
-3. Configure:
-   - **Root Directory:** `discord-bot`
-   - **Build Command:** `npm install`
-   - **Start Command:** `node index.js`
-   - **Instance Type:** Free
-4. Add environment variables:
-   - `DISCORD_TOKEN`, `TARGET_CHANNEL_ID`, `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH`, `PORT=8000`
-5. Click **"Create Web Service"**
-6. **Important:** Set up https://cron-job.org to ping your bot URL every 5 minutes (prevents sleep)
+1. Go to repo **Settings** → **Secrets and variables** → **Actions**
+2. Add three secrets:
+   - `DISCORD_TOKEN` — from Discord Developer Portal → Bot tab
+   - `TARGET_CHANNEL_ID` — `1516990189355012367`
+   - `GITHUB_TOKEN` — from https://github.com/settings/tokens (classic, `repo` scope)
+3. Commit the workflow files (already in `.github/workflows/discord-poll.yml`)
+4. The bot runs automatically every 5 minutes
 
-See [discord-bot/DEPLOY-RENDER.md](discord-bot/DEPLOY-RENDER.md) for detailed instructions.
+**Why GitHub Actions?**
+- ✅ Free (2,000 min/month, you'll use ~15 min/day)
+- ✅ No credit card
+- ✅ Clean IPs (not blocked by Discord/Cloudflare)
+- ✅ No external hosting needed
+- ✅ Already integrated with your repo
+
+See [GITHUB-ACTIONS-SETUP.md](GITHUB-ACTIONS-SETUP.md) for detailed instructions.
 
 ---
 
