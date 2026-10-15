@@ -25,7 +25,7 @@ const CONFIG = {
   GITHUB_BRANCH: process.env.GITHUB_BRANCH || 'main',
   NEWS_JSON_PATH: 'public/news.json',
   IMAGES_PATH: 'public/assets/dispatches',
-  POLL_INTERVAL_MS: 10000, // Check every 10 seconds
+  POLL_INTERVAL_MS: 30000, // Check every 30 seconds to avoid rate limits
   MAX_RETRIES: 3,
   RETRY_DELAY_MS: 2000,
 };
@@ -67,21 +67,26 @@ let pollCount = 0;
 async function fetchMessages(limit = 10) {
   const url = `${DISCORD_API}/channels/${CONFIG.TARGET_CHANNEL_ID}/messages?limit=${limit}`;
   
-  const response = await fetch(url, { headers: discordHeaders });
-  
-  if (response.status === 429) {
-    const retryAfter = response.headers.get('retry-after') || '5';
-    console.warn(`⏳ Discord rate limited. Waiting ${retryAfter}s...`);
-    await sleep(parseFloat(retryAfter) * 1000);
-    return fetchMessages(limit);
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const response = await fetch(url, { headers: discordHeaders });
+    
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('retry-after');
+      const waitTime = retryAfter ? parseFloat(retryAfter) * 1000 : Math.pow(2, attempt) * 1000;
+      console.warn(`⏳ Discord rate limited. Waiting ${Math.ceil(waitTime / 1000)}s (attempt ${attempt}/3)...`);
+      await sleep(waitTime);
+      continue;
+    }
+    
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Discord API error ${response.status}: ${error.substring(0, 100)}`);
+    }
+    
+    return response.json();
   }
   
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Discord API error ${response.status}: ${error}`);
-  }
-  
-  return response.json();
+  throw new Error('Failed to fetch messages after 3 attempts (rate limited)');
 }
 
 /**
@@ -106,18 +111,34 @@ async function addReaction(messageId, emoji) {
 async function verifyBotToken() {
   console.log('🔌 Verifying Discord bot token...');
   
-  const response = await fetch(`${DISCORD_API}/users/@me`, {
-    headers: discordHeaders,
-  });
+  // Wait a bit before making the first request to avoid rate limits
+  await sleep(2000);
   
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Token verification failed (${response.status}): ${error}`);
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const response = await fetch(`${DISCORD_API}/users/@me`, {
+      headers: discordHeaders,
+    });
+    
+    // Handle rate limiting with exponential backoff
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('retry-after');
+      const waitTime = retryAfter ? parseFloat(retryAfter) * 1000 : Math.pow(2, attempt) * 1000;
+      console.warn(`⏳ Rate limited. Waiting ${Math.ceil(waitTime / 1000)}s before retry ${attempt}/5...`);
+      await sleep(waitTime);
+      continue;
+    }
+    
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Token verification failed (${response.status}): ${error.substring(0, 100)}`);
+    }
+    
+    const user = await response.json();
+    console.log(`✓ Bot verified: ${user.username}#${user.discriminator} (ID: ${user.id})`);
+    return user;
   }
   
-  const user = await response.json();
-  console.log(`✓ Bot verified: ${user.username}#${user.discriminator} (ID: ${user.id})`);
-  return user;
+  throw new Error('Failed to verify token after 5 attempts (rate limited)');
 }
 
 /**
@@ -126,18 +147,34 @@ async function verifyBotToken() {
 async function verifyChannel() {
   console.log(`🔌 Verifying channel ${CONFIG.TARGET_CHANNEL_ID}...`);
   
-  const response = await fetch(`${DISCORD_API}/channels/${CONFIG.TARGET_CHANNEL_ID}`, {
-    headers: discordHeaders,
-  });
+  // Small delay between API calls
+  await sleep(1000);
   
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Channel verification failed (${response.status}): ${error}`);
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const response = await fetch(`${DISCORD_API}/channels/${CONFIG.TARGET_CHANNEL_ID}`, {
+      headers: discordHeaders,
+    });
+    
+    // Handle rate limiting
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('retry-after');
+      const waitTime = retryAfter ? parseFloat(retryAfter) * 1000 : Math.pow(2, attempt) * 1000;
+      console.warn(`⏳ Rate limited. Waiting ${Math.ceil(waitTime / 1000)}s before retry ${attempt}/5...`);
+      await sleep(waitTime);
+      continue;
+    }
+    
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Channel verification failed (${response.status}): ${error.substring(0, 100)}`);
+    }
+    
+    const channel = await response.json();
+    console.log(`✓ Channel verified: #${channel.name} (Type: ${channel.type === 0 ? 'Text' : channel.type})`);
+    return channel;
   }
   
-  const channel = await response.json();
-  console.log(`✓ Channel verified: #${channel.name} (Type: ${channel.type === 0 ? 'Text' : channel.type})`);
-  return channel;
+  throw new Error('Failed to verify channel after 5 attempts (rate limited)');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
