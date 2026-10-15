@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { dispatches as hardcodedDispatches, fetchDispatches, categoryColors, categoryLabels, type Category, type NewsDispatch } from './data/news';
+import { fetchDispatches, categoryColors, categoryLabels, type Category, type NewsDispatch } from './data/news';
 import { StateCrest, OrnamentalDivider, CornerOrnament } from './components/Heraldry';
 import LiveFeed from './components/LiveFeed';
 
@@ -416,41 +416,51 @@ function DiscordEmbedPreview({ dispatches }: { dispatches: NewsDispatch[] }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {dispatches.slice(0, 3).map((d) => (
-          <div
-            key={d.id}
-            className="bg-[#2f3136] rounded-md border-l-4 overflow-hidden hover:scale-[1.02] transition-transform duration-300"
-            style={{ borderLeftColor: categoryColors[d.category] }}
-          >
-            <div className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center">
-                  <StateCrest size={18} />
+      {dispatches.length === 0 ? (
+        <div className="text-center py-12 border border-[#D4AF37]/10 bg-[#1a1d23]/30 rounded-sm">
+          <p className="font-body text-[#94A3B8]/40 text-sm">
+            No dispatches yet. Post a message in the Discord news channel to see it appear here.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {dispatches.slice(0, 3).map((d) => (
+            <div
+              key={d.id}
+              className="bg-[#2f3136] rounded-md border-l-4 overflow-hidden hover:scale-[1.02] transition-transform duration-300"
+              style={{ borderLeftColor: categoryColors[d.category] }}
+            >
+              <div className="p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center">
+                    <StateCrest size={18} />
+                  </div>
+                  <div>
+                    <span className="text-[#E2E8F0] text-sm font-bold block">The State Gazette</span>
+                    <span className="text-[#94A3B8] text-xs">
+                      {d.timestamp ? new Date(d.timestamp).toLocaleTimeString() : 'Recently'}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[#E2E8F0] text-sm font-bold block">The State Gazette</span>
-                  <span className="text-[#94A3B8] text-xs">Today at 12:00</span>
-                </div>
-              </div>
-              <div className="ml-10">
-                <div className="text-[#D4AF37] text-[10px] font-bold mb-1.5 uppercase tracking-[0.15em]">
-                  {d.classification}
-                </div>
-                <div className="text-[#E2E8F0] text-sm font-bold mb-2 leading-tight">
-                  {d.headline}
-                </div>
-                <div className="text-[#94A3B8] text-xs leading-relaxed mb-2">
-                  <strong className="text-[#D4AF37]/70">[{d.dateline}] — [{d.date}]</strong> — {d.paragraphs[0].slice(0, 100)}...
-                </div>
-                <div className="text-[#94A3B8]/40 text-[10px] italic">
-                  Filed by {d.author}
+                <div className="ml-10">
+                  <div className="text-[#D4AF37] text-[10px] font-bold mb-1.5 uppercase tracking-[0.15em]">
+                    {d.classification}
+                  </div>
+                  <div className="text-[#E2E8F0] text-sm font-bold mb-2 leading-tight">
+                    {d.headline}
+                  </div>
+                  <div className="text-[#94A3B8] text-xs leading-relaxed mb-2">
+                    <strong className="text-[#D4AF37]/70">[{d.dateline}] — [{d.date}]</strong> — {d.paragraphs[0]?.slice(0, 100) || ''}...
+                  </div>
+                  <div className="text-[#94A3B8]/40 text-[10px] italic">
+                    Filed by {d.author}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -742,9 +752,16 @@ export default function App() {
                 </div>
               ) : (
                 <div className="text-center py-20">
-                  <div className="font-headline text-[#94A3B8]/40 text-lg mb-2">No Dispatches Found</div>
-                  <p className="font-body text-[#94A3B8]/30 text-sm">
-                    {searchQuery ? 'No results match your search query.' : 'No dispatches have been filed under this category.'}
+                  <div className="font-headline text-[#94A3B8]/40 text-lg mb-2">
+                    {searchQuery ? 'No Dispatches Found' : 'No Dispatches Yet'}
+                  </div>
+                  <p className="font-body text-[#94A3B8]/30 text-sm max-w-md mx-auto">
+                    {searchQuery 
+                      ? 'No results match your search query.' 
+                      : isLoading 
+                        ? 'Loading dispatches...'
+                        : 'The Wire Service is active and awaiting dispatches from the DiplomaticaMC news channels. Post a message in Discord to publish it here.'
+                    }
                   </p>
                 </div>
               )}
