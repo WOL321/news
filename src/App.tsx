@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { dispatches, categoryColors, categoryLabels, breakingHeadlines, type Category, type NewsDispatch } from './data/news';
 import { StateCrest, OrnamentalDivider, CornerOrnament } from './components/Heraldry';
+import LiveFeed from './components/LiveFeed';
 
 /* ===== MARQUEE TICKER ===== */
 function MarqueeTicker() {
@@ -740,6 +741,9 @@ export default function App() {
               <ArchiveSidebar allDispatches={dispatches} onSelectArticle={handleSelectArticle} />
             </div>
           </div>
+
+          {/* Live Discord Feed */}
+          <LiveFeed />
 
           {/* Discord Embed Preview */}
           <DiscordEmbedPreview />

@@ -1,0 +1,16 @@
+{
+  "name": "state-gazette-discord-bot",
+  "version": "1.0.0",
+  "description": "Discord bot that forwards news channel messages to The State Gazette",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
